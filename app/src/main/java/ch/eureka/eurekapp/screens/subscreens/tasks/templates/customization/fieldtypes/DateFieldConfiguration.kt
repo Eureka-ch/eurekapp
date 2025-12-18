@@ -66,14 +66,27 @@ fun DateFieldConfiguration(
         else -> null
       }
 
-  fun tryUpdateModel() {
-    if (minDateParseError != null ||
-        maxDateParseError != null ||
-        dateRangeError != null ||
-        formatError != null)
+  fun tryUpdateModel(minStr: String, maxStr: String, formatStr: String) {
+    val newMinDate = minStr.trim().ifBlank { null }
+    val newMaxDate = maxStr.trim().ifBlank { null }
+    val newFormat = formatStr.trim().ifBlank { null }
+
+    val newMinDateParseError = FieldTypeConstraintValidator.validateDateString(newMinDate)
+    val newMaxDateParseError = FieldTypeConstraintValidator.validateDateString(newMaxDate)
+    val newDateRangeError =
+        if (newMinDateParseError == null && newMaxDateParseError == null) {
+          FieldTypeConstraintValidator.validateDateRange(newMinDate, newMaxDate)
+        } else null
+    val newFormatError = FieldTypeConstraintValidator.validateDateFormat(newFormat)
+
+    if (newMinDateParseError != null ||
+        newMaxDateParseError != null ||
+        newDateRangeError != null ||
+        newFormatError != null)
         return
+
     try {
-      onUpdate(fieldType.copy(minDate = minDateValue, maxDate = maxDateValue, format = formatValue))
+      onUpdate(fieldType.copy(minDate = newMinDate, maxDate = newMaxDate, format = newFormat))
     } catch (e: IllegalArgumentException) {
       // Safety catch - shouldn't happen with proper validation
     }
@@ -84,7 +97,7 @@ fun DateFieldConfiguration(
         value = localMinDate,
         onValueChange = {
           localMinDate = it
-          tryUpdateModel()
+          tryUpdateModel(it, localMaxDate, localFormat)
         },
         label = { Text("Min Date (YYYY-MM-DD)") },
         enabled = enabled,
@@ -99,7 +112,7 @@ fun DateFieldConfiguration(
         value = localMaxDate,
         onValueChange = {
           localMaxDate = it
-          tryUpdateModel()
+          tryUpdateModel(localMinDate, it, localFormat)
         },
         label = { Text("Max Date (YYYY-MM-DD)") },
         enabled = enabled,
@@ -125,7 +138,7 @@ fun DateFieldConfiguration(
         value = localFormat,
         onValueChange = {
           localFormat = it
-          tryUpdateModel()
+          tryUpdateModel(localMinDate, localMaxDate, it)
         },
         label = { Text("Format") },
         enabled = enabled,

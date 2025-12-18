@@ -72,15 +72,23 @@ fun MultiSelectFieldConfiguration(
         else -> null
       }
 
-  fun tryUpdateModel() {
-    if (minSelectionsParseError || maxSelectionsParseError) return
-    if (rangeError != null ||
-        minSelectionsConstraintError != null ||
-        maxSelectionsConstraintError != null)
+  fun tryUpdateModel(minStr: String, maxStr: String) {
+    val newParsedMin = minStr.trim().toIntOrNull()
+    val newParsedMax = maxStr.trim().toIntOrNull()
+
+    val newMinParseError = minStr.isNotBlank() && newParsedMin == null
+    val newMaxParseError = maxStr.isNotBlank() && newParsedMax == null
+    if (newMinParseError || newMaxParseError) return
+
+    val newRangeError =
+        FieldTypeConstraintValidator.validateSelectionsRange(newParsedMin, newParsedMax)
+    val newMinConstraintError = FieldTypeConstraintValidator.validateMinSelections(newParsedMin)
+    val newMaxConstraintError = FieldTypeConstraintValidator.validateMaxSelections(newParsedMax)
+    if (newRangeError != null || newMinConstraintError != null || newMaxConstraintError != null)
         return
+
     try {
-      onUpdate(
-          fieldType.copy(minSelections = parsedMinSelections, maxSelections = parsedMaxSelections))
+      onUpdate(fieldType.copy(minSelections = newParsedMin, maxSelections = newParsedMax))
     } catch (e: IllegalArgumentException) {
       // Safety catch - shouldn't happen with proper validation
     }
@@ -98,7 +106,7 @@ fun MultiSelectFieldConfiguration(
         value = localMinSelections,
         onValueChange = {
           localMinSelections = it
-          tryUpdateModel()
+          tryUpdateModel(it, localMaxSelections)
         },
         label = { Text("Min Selections") },
         enabled = enabled,
@@ -114,7 +122,7 @@ fun MultiSelectFieldConfiguration(
         value = localMaxSelections,
         onValueChange = {
           localMaxSelections = it
-          tryUpdateModel()
+          tryUpdateModel(localMinSelections, it)
         },
         label = { Text("Max Selections") },
         enabled = enabled,

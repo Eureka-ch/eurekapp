@@ -69,13 +69,25 @@ fun NumberFieldConfiguration(
   val stepDisplayError = if (stepParseError) "Invalid number" else stepError
   val decimalsDisplayError = if (decimalsParseError) "Invalid number" else decimalsError
 
-  fun tryUpdateModel() {
-    if (minParseError || maxParseError || stepParseError || decimalsParseError) return
-    if (rangeError != null || stepError != null || decimalsError != null) return
+  fun tryUpdateModel(minStr: String, maxStr: String, stepStr: String, decimalsStr: String) {
+    val newMin = minStr.trim().toDoubleOrNull()
+    val newMax = maxStr.trim().toDoubleOrNull()
+    val newStep = stepStr.trim().toDoubleOrNull()
+    val newDecimals = decimalsStr.trim().toIntOrNull()
+
+    val newMinParseError = minStr.isNotBlank() && newMin == null
+    val newMaxParseError = maxStr.isNotBlank() && newMax == null
+    val newStepParseError = stepStr.isNotBlank() && newStep == null
+    val newDecimalsParseError = decimalsStr.isNotBlank() && newDecimals == null
+    if (newMinParseError || newMaxParseError || newStepParseError || newDecimalsParseError) return
+
+    val newRangeError = FieldTypeConstraintValidator.validateMinMax(newMin, newMax)
+    val newStepError = FieldTypeConstraintValidator.validateStep(newStep)
+    val newDecimalsError = FieldTypeConstraintValidator.validateDecimals(newDecimals)
+    if (newRangeError != null || newStepError != null || newDecimalsError != null) return
+
     try {
-      onUpdate(
-          fieldType.copy(
-              min = parsedMin, max = parsedMax, step = parsedStep, decimals = parsedDecimals))
+      onUpdate(fieldType.copy(min = newMin, max = newMax, step = newStep, decimals = newDecimals))
     } catch (e: IllegalArgumentException) {
       // Safety catch - shouldn't happen with proper validation
     }
@@ -86,7 +98,7 @@ fun NumberFieldConfiguration(
         value = localMin,
         onValueChange = {
           localMin = it
-          tryUpdateModel()
+          tryUpdateModel(it, localMax, localStep, localDecimals)
         },
         label = { Text("Min") },
         enabled = enabled,
@@ -102,7 +114,7 @@ fun NumberFieldConfiguration(
         value = localMax,
         onValueChange = {
           localMax = it
-          tryUpdateModel()
+          tryUpdateModel(localMin, it, localStep, localDecimals)
         },
         label = { Text("Max") },
         enabled = enabled,
@@ -118,7 +130,7 @@ fun NumberFieldConfiguration(
         value = localStep,
         onValueChange = {
           localStep = it
-          tryUpdateModel()
+          tryUpdateModel(localMin, localMax, it, localDecimals)
         },
         label = { Text("Step") },
         enabled = enabled,
@@ -134,7 +146,7 @@ fun NumberFieldConfiguration(
         value = localDecimals,
         onValueChange = {
           localDecimals = it
-          tryUpdateModel()
+          tryUpdateModel(localMin, localMax, localStep, it)
         },
         label = { Text("Decimals") },
         enabled = enabled,

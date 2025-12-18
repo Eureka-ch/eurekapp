@@ -66,12 +66,23 @@ fun TextFieldConfiguration(
         else -> null
       }
 
-  fun tryUpdateModel() {
-    if (minLengthParseError || maxLengthParseError) return
-    if (rangeError != null || minLengthConstraintError != null || maxLengthConstraintError != null)
+  fun tryUpdateModel(minStr: String, maxStr: String) {
+    val newMinLength = minStr.trim().toIntOrNull()
+    val newMaxLength = maxStr.trim().toIntOrNull()
+
+    val newMinParseError = minStr.isNotBlank() && newMinLength == null
+    val newMaxParseError = maxStr.isNotBlank() && newMaxLength == null
+    if (newMinParseError || newMaxParseError) return
+
+    val newRangeError =
+        FieldTypeConstraintValidator.validateTextLengthRange(newMinLength, newMaxLength)
+    val newMinConstraintError = FieldTypeConstraintValidator.validateMinLength(newMinLength)
+    val newMaxConstraintError = FieldTypeConstraintValidator.validateMaxLength(newMaxLength)
+    if (newRangeError != null || newMinConstraintError != null || newMaxConstraintError != null)
         return
+
     try {
-      onUpdate(fieldType.copy(minLength = parsedMinLength, maxLength = parsedMaxLength))
+      onUpdate(fieldType.copy(minLength = newMinLength, maxLength = newMaxLength))
     } catch (e: IllegalArgumentException) {
       // Safety catch - shouldn't happen with proper validation
     }
@@ -82,7 +93,7 @@ fun TextFieldConfiguration(
         value = localMaxLength,
         onValueChange = {
           localMaxLength = it
-          tryUpdateModel()
+          tryUpdateModel(localMinLength, it)
         },
         label = { Text("Max Length") },
         enabled = enabled,
@@ -98,7 +109,7 @@ fun TextFieldConfiguration(
         value = localMinLength,
         onValueChange = {
           localMinLength = it
-          tryUpdateModel()
+          tryUpdateModel(it, localMaxLength)
         },
         label = { Text("Min Length") },
         enabled = enabled,
