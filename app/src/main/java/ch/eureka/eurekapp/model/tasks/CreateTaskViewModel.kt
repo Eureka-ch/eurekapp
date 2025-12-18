@@ -7,6 +7,7 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
@@ -23,8 +24,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /*
@@ -60,6 +63,9 @@ class CreateTaskViewModel(
     val result = state.customData.validate(template.definedFields)
     return result is ch.eureka.eurekapp.model.data.task.ValidationResult.Success
   }
+  private val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected =
+      connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
   init {
     // Load available projects
@@ -184,7 +190,7 @@ class CreateTaskViewModel(
             when {
               exception?.message?.contains("Timed out") == true ->
                   "Upload timed out. Please check your connection and try again."
-              exception?.message?.contains("Unable to resolve host") == true ->
+              exception?.message?.contains("Unable to.resolve host") == true ->
                   "Network error. Please check your internet connection."
               else -> "Unable to save task: ${exception?.message}"
             }

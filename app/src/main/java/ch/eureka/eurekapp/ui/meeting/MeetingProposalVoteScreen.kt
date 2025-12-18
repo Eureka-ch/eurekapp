@@ -104,6 +104,17 @@ fun MeetingProposalVoteScreen(
   val context = LocalContext.current
   val uiState by meetingProposalVoteViewModel.uiState.collectAsState()
 
+  val isConnected by meetingProposalVoteViewModel.isConnected.collectAsState()
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
+      onBackClick()
+    }
+  }
+
   // Show error message if there is any
   LaunchedEffect(uiState.errorMsg) {
     uiState.errorMsg?.let {

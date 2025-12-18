@@ -1,6 +1,8 @@
 package ch.eureka.eurekapp.ui.meeting
 
 import ch.eureka.eurekapp.model.chatbot.ChatbotRepository
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
@@ -36,8 +38,8 @@ class TranscriptViewModelTest {
   private lateinit var chatbotRepository: ChatbotRepository
   private lateinit var testDispatcher: TestDispatcher
 
-  private val projectId = "test-project"
-  private val meetingId = "test-meeting"
+  private val projectId = "test-project-id"
+  private val meetingId = "test-meeting-id"
   private val audioUrl = "https://test.com/audio.mp4"
   private val transcriptId = "test-transcript-id"
 
@@ -49,12 +51,18 @@ class TranscriptViewModelTest {
     meetingRepository = mockk(relaxed = true)
     speechToTextRepository = mockk(relaxed = true)
     chatbotRepository = mockk(relaxed = true)
+
+    // Mock ConnectivityObserverProvider
+    mockkObject(ConnectivityObserverProvider)
+    val mockConnectivityObserver = mockk<ConnectivityObserver>(relaxed = true)
+    every { mockConnectivityObserver.isConnected } returns flowOf(true)
+    every { ConnectivityObserverProvider.connectivityObserver } returns mockConnectivityObserver
   }
 
   @After
   fun tearDown() {
     Dispatchers.resetMain()
-    clearAllMocks()
+    unmockkAll()
   }
 
   @Test

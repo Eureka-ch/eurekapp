@@ -11,6 +11,7 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
@@ -26,9 +27,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** ViewModel for the EditTask screen. This ViewModel manages the state of input fields. */
@@ -60,6 +63,9 @@ class EditTaskViewModel(
     val result = state.customData.validate(template.definedFields)
     return result is ch.eureka.eurekapp.model.data.task.ValidationResult.Success
   }
+  private val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected =
+      connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
   init {
     // Load available projects
