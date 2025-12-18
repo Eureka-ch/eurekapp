@@ -8,9 +8,12 @@ import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.LocalAudioRecordingRepository
 import ch.eureka.eurekapp.model.audio.RecordingState
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -19,6 +22,23 @@ class AudioRecordingViewModelTest {
   @get:Rule
   val permissionRule: GrantPermissionRule =
       GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
+
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
+
+  @Before
+  fun setup() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+
+    // Initialize mock connectivity observer
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
+  }
 
   @Test
   fun audioRecordingViewModel_startRecordingWorksAsExpected() {

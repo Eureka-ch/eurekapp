@@ -93,6 +93,17 @@ fun CreateTaskScreen(
   val context = LocalContext.current
   val scrollState = rememberScrollState()
 
+  val isConnected by createTaskViewModel.isConnected.collectAsState()
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
+      navigationController.popBackStack()
+    }
+  }
+
   // File picker launcher for any file type
   val filePickerLauncher =
       rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
@@ -144,7 +155,8 @@ fun CreateTaskScreen(
                     context = context,
                     inputValid = inputValid,
                     filePickerLauncher = filePickerLauncher,
-                    temporaryPhotoUris = createTaskState.temporaryPhotoUris))
+                    temporaryPhotoUris = createTaskState.temporaryPhotoUris,
+                    isConnected = isConnected))
       })
 }
 
@@ -252,7 +264,8 @@ private data class CreateTaskContentConfig(
     val context: android.content.Context,
     val inputValid: Boolean,
     val filePickerLauncher: androidx.activity.compose.ManagedActivityResultLauncher<String, Uri?>,
-    val temporaryPhotoUris: List<Uri>
+    val temporaryPhotoUris: List<Uri>,
+    val isConnected: Boolean
 )
 
 @Composable
@@ -357,7 +370,7 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
               config.createTaskViewModel.removeAttachmentAndDelete(config.context, index)
             },
             isReadOnly = false,
-            isConnected = true)
+            isConnected = config.isConnected)
 
         Button(
             onClick = { config.createTaskViewModel.addTask(config.context) },

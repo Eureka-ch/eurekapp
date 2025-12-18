@@ -55,6 +55,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreenTestTag
 import ch.eureka.eurekapp.testutils.testCameraRoute
 import ch.eureka.eurekapp.ui.tasks.TaskScreenViewModel
 import ch.eureka.eurekapp.utils.FirebaseEmulator
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import java.text.SimpleDateFormat
@@ -1377,6 +1378,64 @@ open class EditTaskScreenTest : TestCase() {
 
     // Verify deleteFile was called for the remote URL
     assert(fileRepository.deletedFiles.contains(remoteUrl))
+  }
+
+  @Test
+  fun editTaskScreen_navigatesBackWhenConnectionLost() {
+    runBlocking {
+      val projectId = "project123"
+      val taskId = "task123"
+      setupTestProject(projectId)
+      setupTestTask(projectId, taskId, title = "Test Task")
+
+      // Start with connection online
+      val mockConnectivityObserver = MockConnectivityObserver(context)
+      mockConnectivityObserver.setConnected(true)
+
+      // Replace ConnectivityObserverProvider's observer with mock for testing
+      val originalObserver = ConnectivityObserverProvider.connectivityObserver
+      val providerField =
+          ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+      providerField.isAccessible = true
+      providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
+
+      val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+      lastEditVm = viewModel
+
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        FakeNavGraph(
+            projectId = projectId,
+            taskId = taskId,
+            navController = navController,
+            viewModel = viewModel)
+        navController.navigate(Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Verify we're on EditTaskScreen
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+
+      // Simulate connection loss
+      mockConnectivityObserver.setConnected(false)
+
+      composeTestRule.waitForIdle()
+
+      // Verify navigation back to TasksScreen
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        try {
+          composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+          true
+        } catch (e: Exception) {
+          false
+        }
+      }
+      composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+
+      // Restore original observer
+      providerField.set(ConnectivityObserverProvider, originalObserver)
+    }
   }
 }
 

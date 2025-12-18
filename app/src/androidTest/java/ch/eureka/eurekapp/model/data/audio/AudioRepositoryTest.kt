@@ -7,16 +7,18 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.audio.LocalAudioRecordingRepository
 import ch.eureka.eurekapp.model.audio.RecordingState
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
 import org.junit.Test
 
 /**
- * Note :This file was partially written by ChatGPT (GPT-5), and Grok Co-author : GPT-5 Co-author :
+ * Note :This file was partially written by ChatGPT (GPT-5) and Grok Co-author : GPT-5 Co-author :
  * Grok
  */
 class AudioRepositoryTest {
@@ -29,6 +31,11 @@ class AudioRepositoryTest {
   @Test
   fun audioRepository_createRecordingWorks() {
     val context: Context = ApplicationProvider.getApplicationContext()
+    val mockConnectivityObserver = MockConnectivityObserver(context)
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
     composeTestRule.setContent {
       val context = LocalContext.current
       MeetingAudioRecordingScreen(

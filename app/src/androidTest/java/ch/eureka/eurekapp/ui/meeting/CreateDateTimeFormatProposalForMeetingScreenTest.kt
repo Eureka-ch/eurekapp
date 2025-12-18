@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini, and Grok.*/
+/* Portions of this file were written with the help of Gemini and Grok.*/
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -10,6 +10,8 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
@@ -17,6 +19,7 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import java.time.Instant
 import java.time.LocalDateTime
@@ -47,8 +50,10 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
 
   private lateinit var viewModel: CreateDateTimeFormatProposalForMeetingViewModel
   private lateinit var repositoryMock: MockCreateMeetingProposalScreenRepository
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   private var onDoneCalled = false
+  private var onBackClickCalled = false
   private val testProjectId = "project-123"
   private val testMeetingId = "meeting-abc"
   private val testUserId = "test-user-id"
@@ -70,10 +75,23 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   fun setup() {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
     onDoneCalled = false
+    onBackClickCalled = false
 
     repositoryMock = MockCreateMeetingProposalScreenRepository()
 
     repositoryMock.meetingToReturn = baseMeeting
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer for all tests
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
 
     viewModel =
         CreateDateTimeFormatProposalForMeetingViewModel(
@@ -87,6 +105,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
           projectId = testProjectId,
           meetingId = testMeetingId,
           onDone = { onDoneCalled = true },
+          onBackClick = { onBackClickCalled = true },
           createMeetingProposalViewModel = viewModel)
     }
 
@@ -354,6 +373,25 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithText(errorText).assertDoesNotExist()
+  }
+
+  @Test
+  fun createDateTimeFormatProposalForMeetingScreen_navigatesBackWhenConnectionLost() {
+    // Verify we're on CreateDateTimeFormatProposalForMeetingScreen
+    composeTestRule
+        .onNodeWithTag(
+            CreateDateTimeFormatMeetingProposalScreenTestTags.CREATE_MEETING_PROPOSAL_SCREEN_TITLE)
+        .assertIsDisplayed()
+
+    // Simulate connection loss
+    mockConnectivityObserver.setConnected(false)
+
+    composeTestRule.waitForIdle()
+
+    // Verify onBackClick was called
+    composeTestRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled }
+
+    assertTrue("onBackClick should be called", onBackClickCalled)
   }
 }
 

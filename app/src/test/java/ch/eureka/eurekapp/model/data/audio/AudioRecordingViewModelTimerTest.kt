@@ -1,6 +1,8 @@
 package ch.eureka.eurekapp.model.audio
-// Parts of this code were generated using the help of Gemini 3 Pro
+// Parts of this code were generated using the help of Gemini 3 Pro and Grok
 import android.content.Context
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import io.mockk.every
@@ -31,10 +33,21 @@ class AudioRecordingViewModelTimerTest {
 
   private val testDispatcher = StandardTestDispatcher()
 
+  private val mockConnectivityObserver: ConnectivityObserver = mockk(relaxed = true)
+
   @Before
   fun setUp() {
     Dispatchers.setMain(testDispatcher)
     every { recordingRepository.getRecordingStateFlow() } returns recordingStateFlow
+
+    // Initialize mock connectivity observer
+    every { mockConnectivityObserver.isConnected } returns MutableStateFlow<Boolean>(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
 
     viewModel =
         AudioRecordingViewModel(

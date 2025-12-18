@@ -1,7 +1,10 @@
 /* Portions of the code in this file were written with the help of Gemini, and Grok. */
 package ch.eureka.eurekapp.ui.map
 
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.android.gms.maps.model.LatLng
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -17,9 +20,22 @@ import org.junit.Test
 class MeetingLocationSelectionViewModelTest {
 
   private lateinit var viewModel: MeetingLocationSelectionViewModel
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   @Before
   fun setup() {
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
+
     viewModel = MeetingLocationSelectionViewModel()
   }
 

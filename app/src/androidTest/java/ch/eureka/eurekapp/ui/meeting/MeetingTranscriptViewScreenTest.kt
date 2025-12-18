@@ -1,28 +1,29 @@
-/* Portions of this file were written with the help of Gemini, and Grok*/
+/* Portions of this file were written with the help of Gemini, Grok and GPT-5.*/
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.TranscriptScreenTestTags
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * Test suite for MeetingTranscriptViewScreen
- *
- * Note: This file was partially written by ChatGPT (GPT-5) Co-author: GPT-5
- */
+/** Test suite for MeetingTranscriptViewScreen */
 class MeetingTranscriptViewScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
   private val meetingFlow = MutableStateFlow<Meeting?>(null)
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   private val repositoryMock =
       object : MeetingRepositoryMock() {
@@ -30,6 +31,21 @@ class MeetingTranscriptViewScreenTest {
           return meetingFlow
         }
       }
+
+  @Before
+  fun setup() {
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer for all tests
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
+  }
 
   @Test
   fun meetingTranscriptViewScreen_loadingStateDisplaysLoadingIndicator() {
@@ -632,5 +648,50 @@ class MeetingTranscriptViewScreenTest {
 
     // Error message should be displayed
     composeTestRule.onAllNodesWithTag(TranscriptScreenTestTags.ERROR_MESSAGE).assertCountEquals(1)
+  }
+
+  @Test
+  fun meetingTranscriptViewScreen_navigatesBackWhenConnectionLost() {
+    val meeting =
+        Meeting(
+            meetingID = "test-meeting",
+            projectId = "test-project",
+            title = "Test Meeting",
+            status = MeetingStatus.COMPLETED,
+            attachmentUrls = listOf("https://test.com/audio.mp4"))
+
+    meetingFlow.value = meeting
+
+    val viewModel =
+        TranscriptViewModel(
+            projectId = "test-project",
+            meetingId = "test-meeting",
+            meetingRepository = repositoryMock,
+            speechToTextRepository = io.mockk.mockk(relaxed = true),
+            chatbotRepository = io.mockk.mockk(relaxed = true))
+
+    var backCalled = false
+    composeTestRule.setContent {
+      MeetingTranscriptViewScreen(
+          projectId = "test-project",
+          meetingId = "test-meeting",
+          viewModel = viewModel,
+          onNavigateBack = { backCalled = true })
+    }
+
+    composeTestRule.waitForIdle()
+
+    // Verify we're on MeetingTranscriptViewScreen
+    composeTestRule.onNodeWithTag(TranscriptScreenTestTags.TRANSCRIPT_SCREEN).assertExists()
+
+    // Simulate connection loss
+    mockConnectivityObserver.setConnected(false)
+
+    composeTestRule.waitForIdle()
+
+    // Verify onNavigateBack was called
+    composeTestRule.waitUntil(timeoutMillis = 5000) { backCalled }
+
+    assert(backCalled)
   }
 }

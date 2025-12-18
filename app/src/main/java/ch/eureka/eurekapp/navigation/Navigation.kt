@@ -555,8 +555,7 @@ fun NavigationMenu(
                           Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(
                               projectId = meetingProposalVotesRoute.projectId,
                               meetingId = meetingProposalVotesRoute.meetingId))
-                    },
-                )
+                    })
               }
 
               composable<Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting> {
@@ -576,7 +575,14 @@ fun NavigationMenu(
                                   createDateTimeFormatMeetingProposalForMeetingVotesRoute
                                       .meetingId))
                     },
-                )
+                    onBackClick = { navigationController.popBackStack() })
+              }
+
+              composable<Route.OverviewProjectSection.CreateInvitation> { backStackEntry ->
+                val createInvitationRoute =
+                    backStackEntry.toRoute<Route.OverviewProjectSection.CreateInvitation>()
+                CreateInvitationSubscreen(
+                    projectId = createInvitationRoute.projectId, onInvitationCreate = {})
               }
 
               composable<Route.MeetingsSection.MeetingNavigation> { backStackEntry ->
@@ -609,13 +615,6 @@ fun NavigationMenu(
                     projectId = audioTranscriptRoute.projectId,
                     meetingId = audioTranscriptRoute.meetingId,
                     onNavigateBack = { navigationController.popBackStack() })
-              }
-
-              composable<Route.OverviewProjectSection.CreateInvitation> { backStackEntry ->
-                val createInvitationRoute =
-                    backStackEntry.toRoute<Route.OverviewProjectSection.CreateInvitation>()
-                CreateInvitationSubscreen(
-                    projectId = createInvitationRoute.projectId, onInvitationCreate = {})
               }
 
               composable<Route.Camera> {

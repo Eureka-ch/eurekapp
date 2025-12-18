@@ -12,9 +12,12 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.LocalAudioRecordingRepository
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.audio.MockedStorageRepository
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioScreenTestTags
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -28,6 +31,23 @@ class MeetingAudioRecordingScreenTest {
   @get:Rule
   val permissionRule: GrantPermissionRule =
       GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
+
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
+
+  @Before
+  fun setUp() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+
+    // Initialize mock connectivity observer for all tests
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
+  }
 
   @Test
   fun meetingAudioRecordingScreen_recordingWorks() {
@@ -195,6 +215,40 @@ class MeetingAudioRecordingScreenTest {
         .assertIsDisplayed()
         .performClick()
 
+    composeTestRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled.value }
+
+    assert(onBackClickCalled.value) { "onBackClick should be called" }
+  }
+
+  @Test
+  fun meetingAudioRecordingScreen_navigatesBackWhenConnectionLost() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val onBackClickCalled = mutableStateOf(false)
+    composeTestRule.setContent {
+      MeetingAudioRecordingScreen(
+          context = context,
+          projectId = "test-project-id",
+          meetingId = "meeting-id",
+          audioRecordingViewModel =
+              AudioRecordingViewModel(
+                  fileStorageRepository = MockedStorageRepository(),
+                  recordingRepository = LocalAudioRecordingRepository()),
+          onBackClick = { onBackClickCalled.value = true })
+    }
+
+    composeTestRule.waitForIdle()
+
+    // Verify we're on MeetingAudioRecordingScreen
+    composeTestRule
+        .onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
+        .assertIsDisplayed()
+
+    // Simulate connection loss
+    mockConnectivityObserver.setConnected(false)
+
+    composeTestRule.waitForIdle()
+
+    // Verify onBackClick was called
     composeTestRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled.value }
 
     assert(onBackClickCalled.value) { "onBackClick should be called" }
