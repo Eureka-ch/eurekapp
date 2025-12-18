@@ -603,7 +603,11 @@ fun NavigationMenu(
                                     Route.MeetingsSection.MeetingProposalVotes(
                                         projectId = projectId, meetingId = meetingId))
                               }
-                            }),
+                            },
+                            onFileManagementScreenClick = {
+                                navigationController.navigate(Route.FilesManagement)
+                            }
+                        ),
                 )
               }
               composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
