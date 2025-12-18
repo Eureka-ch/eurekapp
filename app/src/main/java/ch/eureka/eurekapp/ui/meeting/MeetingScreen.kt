@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Place
@@ -75,6 +76,7 @@ import ch.eureka.eurekapp.model.calendar.MeetingCalendarViewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
@@ -137,7 +139,8 @@ data class MeetingScreenConfig(
     val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onNavigateToMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> },
-    val onRecord: (String, String, Boolean) -> Unit = { _, _, _ -> }
+    val onRecord: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val onFileManagementScreenClick: () -> Unit = {}
 )
 
 /**
@@ -151,7 +154,7 @@ data class MeetingScreenConfig(
 fun MeetingScreen(
     config: MeetingScreenConfig,
     meetingViewModel: MeetingViewModel = viewModel(),
-    calendarViewModel: MeetingCalendarViewModel = viewModel()
+    calendarViewModel: MeetingCalendarViewModel = viewModel(),
 ) {
   val context = LocalContext.current
 
@@ -214,6 +217,14 @@ fun MeetingScreen(
               InteractiveHelpEntryPoint(
                   helpContext = HelpContext.MEETINGS,
                   modifier = Modifier.testTag("meetingsHelpButton"))
+              IconButton(
+                  onClick = config.onFileManagementScreenClick,
+                  modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
+                    Icon(
+                        Icons.Filled.Folder,
+                        contentDescription = "Manage Files",
+                        tint = EColors.WhiteTextColor)
+                  }
             })
       },
       floatingActionButton = {

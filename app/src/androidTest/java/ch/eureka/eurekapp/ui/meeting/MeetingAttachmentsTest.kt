@@ -1,5 +1,5 @@
 package ch.eureka.eurekapp.ui.meeting
-// Portions of this code were generated with the help of Gemini 3 Pro.
+// Portions of this code were generated using the help of Gemini 3 Pro
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -8,11 +8,14 @@ import androidx.compose.ui.test.performClick
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.downloads.DownloadedFile
+import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import com.google.firebase.Timestamp
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -21,33 +24,30 @@ class MeetingAttachmentsTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  // Mock the ViewModel using Mockk
-  // relaxed = true allows methods to return default values (null, 0, etc) without explicit stubbing
   private val mockViewModel: MeetingAttachmentsViewModel = mockk(relaxed = true)
+  private val mockDao: DownloadedFileDao = mockk(relaxed = true)
 
-  // Control the state flows to test loading/idle states
-  private val downloadingFilesFlow = MutableStateFlow<Set<String>>(emptySet())
+  // Updated to use Map instead of Set
+  private val downloadingFilesFlow = MutableStateFlow<Map<String, Boolean>>(emptyMap())
   private val uploadingFileFlow = MutableStateFlow(false)
 
   @Before
   fun setup() {
-    // Wire up the StateFlows using Mockk syntax
-    every { mockViewModel.downloadingFilesSet } returns downloadingFilesFlow
+    // Wire up the StateFlows
+    every { mockViewModel.downloadingFileStateUrlToBoolean } returns downloadingFilesFlow
     every { mockViewModel.isUploadingFile } returns uploadingFileFlow
     every { mockViewModel.attachmentUrlsToFileNames } returns
         MutableStateFlow(mapOf("someUrl" to "file.txt"))
+    every { mockViewModel.downloadedFiles } returns
+        MutableStateFlow<List<DownloadedFile>>(emptyList()).asStateFlow()
 
     // Mock the filename getter logic
-    // 'answers' is equivalent to Mockito's 'thenAnswer'
-    // 'firstArg()' fetches the first argument passed to the function
     every { mockViewModel.getFilenameFromDownloadURL(any()) } answers
         {
           val url = firstArg<String>()
           "TEST_FILE_${url.takeLast(5)}"
         }
   }
-
-  // --- Tests for AttachmentsSection (Empty State & File Picker) ---
 
   @Test
   fun attachmentsSection_emptyList_showsNoAttachmentsMessage() {
@@ -57,12 +57,10 @@ class MeetingAttachmentsTest {
       AttachmentsSection(meeting = meeting, attachmentsViewModel = mockViewModel)
     }
 
-    // Verify "No attachments" message is visible
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.NO_ATTACHMENTS_MESSAGE)
         .assertIsDisplayed()
 
-    // Verify items are NOT displayed
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.ATTACHMENT_ITEM)
         .assertIsNotDisplayed()
@@ -71,18 +69,16 @@ class MeetingAttachmentsTest {
   @Test
   fun attachmentsSection_filePicker_showsButton_whenNotUploading() {
     val meeting = createDummyMeeting()
-    uploadingFileFlow.value = false // Idle state
+    uploadingFileFlow.value = false
 
     composeTestRule.setContent {
       AttachmentsSection(meeting = meeting, attachmentsViewModel = mockViewModel)
     }
 
-    // Verify File Picker Button is visible
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.DOWNLOADING_FILES_BUTTON)
         .assertIsDisplayed()
 
-    // Verify Progress indicator is hidden
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.DOWNLOADING_FILES_PROGRESS_INDICATOR)
         .assertIsNotDisplayed()
@@ -91,24 +87,20 @@ class MeetingAttachmentsTest {
   @Test
   fun attachmentsSection_filePicker_showsProgress_whenUploading() {
     val meeting = createDummyMeeting()
-    uploadingFileFlow.value = true // Uploading state
+    uploadingFileFlow.value = true
 
     composeTestRule.setContent {
       AttachmentsSection(meeting = meeting, attachmentsViewModel = mockViewModel)
     }
 
-    // Verify File Picker Button is hidden
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.DOWNLOADING_FILES_BUTTON)
         .assertIsNotDisplayed()
 
-    // Verify Progress indicator is visible
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.DOWNLOADING_FILES_PROGRESS_INDICATOR)
         .assertIsDisplayed()
   }
-
-  // --- Tests for AttachmentItem (Populated List & Interactions) ---
 
   @Test
   fun attachmentsSection_populatedList_showsItemsAndHidesEmptyMessage() {
@@ -119,7 +111,6 @@ class MeetingAttachmentsTest {
       AttachmentsSection(meeting = meeting, attachmentsViewModel = mockViewModel)
     }
 
-    // Verify "No attachments" message is HIDDEN
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.NO_ATTACHMENTS_MESSAGE)
         .assertIsNotDisplayed()
@@ -134,13 +125,10 @@ class MeetingAttachmentsTest {
       AttachmentsSection(meeting = meeting, attachmentsViewModel = mockViewModel)
     }
 
-    // Generate the dynamic tag for the delete button
     val deleteTag = AttachmentItemTestTags.deleteButtonAttachmentTestTag(url)
 
-    // Perform Click
     composeTestRule.onNodeWithTag(deleteTag).performClick()
 
-    // Verify ViewModel interaction using Mockk verify
     verify {
       mockViewModel.deleteFileFromMeetingAttachments(
           projectId = meeting.projectId,
@@ -155,22 +143,20 @@ class MeetingAttachmentsTest {
   fun attachmentItem_clickDownload_callsViewModel() {
     val url = "http://test.com/file1"
     val meeting = createDummyMeeting(attachments = listOf(url))
-    downloadingFilesFlow.value = emptySet() // Not downloading yet
+    downloadingFilesFlow.value = emptyMap()
 
     composeTestRule.setContent {
       AttachmentsSection(meeting = meeting, attachmentsViewModel = mockViewModel)
     }
 
-    // Generate dynamic tag for download button
     val downloadButtonTag = AttachmentItemTestTags.downloadButtonAttachmentTestTag(url)
 
-    // Click download
     composeTestRule.onNodeWithTag(downloadButtonTag).performClick()
 
-    // Verify ViewModel call
+    // Updated parameter order: url comes first, then context
     verify {
       mockViewModel.downloadFileToPhone(
-          context = any(), downloadUrl = url, onSuccess = any(), onFailure = any())
+          url = url, context = any(), onSuccess = any(), onFailure = any())
     }
   }
 
@@ -179,23 +165,20 @@ class MeetingAttachmentsTest {
     val url = "http://test.com/file1"
     val meeting = createDummyMeeting(attachments = listOf(url))
 
-    // Set state to downloading for this specific URL
-    downloadingFilesFlow.value = setOf(url)
+    // Updated to use Map with true value
+    downloadingFilesFlow.value = mapOf(url to true)
 
     composeTestRule.setContent {
       AttachmentsSection(meeting = meeting, attachmentsViewModel = mockViewModel)
     }
 
-    // Verify Download Button is hidden
     val downloadButtonTag = AttachmentItemTestTags.downloadButtonAttachmentTestTag(url)
     composeTestRule.onNodeWithTag(downloadButtonTag).assertIsNotDisplayed()
 
-    // Verify Progress Indicator is displayed
     val progressTag = AttachmentItemTestTags.downloadButtonCircularProgressIndicatorTestTag(url)
     composeTestRule.onNodeWithTag(progressTag).assertIsDisplayed()
   }
 
-  // --- Helper to create dummy data ---
   private fun createDummyMeeting(
       projectId: String = "p1",
       meetingId: String = "m1",

@@ -20,9 +20,11 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
+import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import com.google.firebase.storage.StorageMetadata
+import io.mockk.mockk
 import java.util.Date
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,12 +45,16 @@ class MeetingDetailScreenTest {
   private var deleteResult = Result.success(Unit)
   private lateinit var viewModel: MeetingDetailViewModel
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
+  private lateinit var fileDatabase: DownloadedFileDao
+  private val testProjectId = "testProject123"
+  private val testMeetingId = "testMeeting123"
 
   @Before
   fun setUp() {
     mockConnectivityObserver =
         MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
     mockConnectivityObserver.setConnected(true)
+    fileDatabase = mockk(relaxed = true)
   }
 
   private class FileStorageRepositoryMock : FileStorageRepository {
@@ -133,7 +139,10 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao = fileDatabase),
           projectId = "test_project",
           meetingId = "test_meeting",
           viewModel = viewModel,
@@ -174,7 +183,10 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao = fileDatabase),
           projectId = "test_project",
           meetingId = "test_meeting",
           viewModel = viewModel)
@@ -217,6 +229,7 @@ class MeetingDetailScreenTest {
     composeTestRule.onNodeWithText("My Test Project").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_DATETIME).assertIsDisplayed()
+
     // Verify the meeting link exists (it's a VIRTUAL meeting with a link)
     assert(meeting.format == MeetingFormat.VIRTUAL && meeting.link != null)
 
@@ -933,7 +946,6 @@ class MeetingDetailScreenTest {
     meetingFlow.value = meeting
     userFlow.value = null
     projectFlow.value = Project(name = "My Test Project")
-
     setContent(currentUserId = creatorId)
 
     composeTestRule.waitForIdle()
@@ -1003,7 +1015,10 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), updatedRepositoryMock, mockConnectivityObserver),
+                  FileStorageRepositoryMock(),
+                  updatedRepositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao = fileDatabase),
           projectId = "test_project",
           meetingId = "test_meeting",
           viewModel = viewModel)
@@ -1058,7 +1073,10 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), updatedRepositoryMock, mockConnectivityObserver),
+                  FileStorageRepositoryMock(),
+                  updatedRepositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao = fileDatabase),
           projectId = "test_project",
           meetingId = "test_meeting",
           viewModel = viewModel)
@@ -1150,7 +1168,10 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao = fileDatabase),
           projectId = "test_project",
           meetingId = "test_meeting",
           viewModel = viewModel)
@@ -1189,7 +1210,10 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao = fileDatabase),
           projectId = "test_project",
           meetingId = "test_meeting",
           viewModel = viewModel)

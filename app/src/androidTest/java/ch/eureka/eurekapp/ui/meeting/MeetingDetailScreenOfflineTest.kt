@@ -22,11 +22,13 @@ import ch.eureka.eurekapp.model.data.meeting.Participant
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
+import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import com.google.firebase.storage.StorageMetadata
+import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -50,6 +52,7 @@ class MeetingDetailScreenOfflineTest {
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private lateinit var viewModel: MeetingDetailViewModel
   private lateinit var attachmentsViewModel: MeetingAttachmentsViewModel
+  private lateinit var fileDatabase: DownloadedFileDao
   private lateinit var projectRepositoryMock: MockProjectRepository
   private val testProjectId = "testProject123"
   private val testMeetingId = "testMeeting123"
@@ -119,6 +122,7 @@ class MeetingDetailScreenOfflineTest {
 
   @Before
   fun setUp() {
+    fileDatabase = mockk(relaxed = true)
     mockConnectivityObserver =
         MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
 
@@ -131,17 +135,12 @@ class MeetingDetailScreenOfflineTest {
     // Initialize ViewModel with all required dependencies
     viewModel =
         MeetingDetailViewModel(
-            projectId = testProjectId,
-            meetingId = testMeetingId,
-            repository = repositoryMock,
-            projectRepository = projectRepositoryMock,
-            userRepository = userRepositoryMock,
-            connectivityObserver = mockConnectivityObserver)
-    attachmentsViewModel =
-        MeetingAttachmentsViewModel(
-            fileStorageRepository = FileStorageRepositoryMock(),
-            meetingsRepository = repositoryMock,
-            connectivityObserver = mockConnectivityObserver)
+            testProjectId,
+            testMeetingId,
+            repositoryMock,
+            projectRepositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver)
   }
 
   @After
@@ -173,6 +172,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -219,6 +224,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -259,6 +270,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -302,6 +319,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -346,6 +369,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -389,6 +418,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -433,6 +468,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -476,6 +517,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(true)
 
     composeTestRule.setContent {
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -528,6 +575,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
