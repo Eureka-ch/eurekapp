@@ -23,6 +23,10 @@ class MockMeetingRepository : MeetingRepository {
     userMeetings.value = meetings
   }
 
+  fun setMeetingsForProject(projectId: String, meetings: Flow<List<Meeting>>) {
+    meetingsByProject[projectId] = meetings
+  }
+
   override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
     return flowOf(meetingsById[projectId to meetingId])
   }
