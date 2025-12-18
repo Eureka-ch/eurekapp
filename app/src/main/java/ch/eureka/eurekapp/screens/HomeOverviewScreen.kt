@@ -97,7 +97,8 @@ data class HomeOverviewActions(
     val onOpenMeetings: () -> Unit = {},
     val onTaskSelected: (projectId: String, taskId: String) -> Unit = { _, _ -> },
     val onMeetingSelected: (projectId: String, meetingId: String) -> Unit = { _, _ -> },
-    val onProjectSelected: (projectId: String) -> Unit = {}
+    val onProjectSelected: (projectId: String) -> Unit = {},
+    val onOpenProjectMembers: (projectId: String) -> Unit = {}
 )
 
 /**
@@ -293,7 +294,21 @@ internal fun HomeOverviewLayout(
                             animationSpec = tween(400, delayMillis = 200))) {
                   ProjectSummaryCard(
                       project = project,
-                      onClick = { actions.onProjectSelected(project.projectId) },
+                      onClick = {}, // No action on card click - only button navigates
+                      actionButton = {
+                        TextButton(
+                            onClick = {
+                              actions.onOpenProjectMembers(project.projectId)
+                            },
+                            colors =
+                                androidx.compose.material3.ButtonDefaults.textButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.primary)) {
+                              Text(
+                                  "Open →",
+                                  style = MaterialTheme.typography.labelLarge,
+                                  fontWeight = FontWeight.Bold)
+                            }
+                      },
                       modifier =
                           Modifier.fillMaxWidth()
                               .padding(vertical = Spacing.xs)

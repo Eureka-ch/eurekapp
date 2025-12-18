@@ -258,6 +258,10 @@ fun NavigationMenu(
                             onProjectSelected = { projectId ->
                               navigationController.navigate(
                                   Route.OverviewProject(projectId = projectId))
+                            },
+                            onOpenProjectMembers = { projectId ->
+                              navigationController.navigate(
+                                  Route.OverviewProjectSection.ProjectMembers(projectId = projectId))
                             }))
               }
               // Main screens
