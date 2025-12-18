@@ -37,7 +37,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.tasks.Attachment
@@ -94,12 +93,13 @@ fun CreateTaskScreen(
   val context = LocalContext.current
   val scrollState = rememberScrollState()
 
-  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
-  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+  val isConnected by createTaskViewModel.isConnected.collectAsState()
 
   // Navigate back if connection is lost
   LaunchedEffect(isConnected) {
     if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
       navigationController.popBackStack()
     }
   }

@@ -81,13 +81,6 @@ class CreateMeetingScreenTest {
 
     projectRepositoryMock.emitProjects(listOf(testProject))
 
-    viewModel =
-        CreateMeetingViewModel(
-            meetingRepository = repositoryMock,
-            locationRepository = locationRepositoryMock,
-            projectRepository = projectRepositoryMock,
-            getCurrentUserId = { "test-user-id" })
-
     val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     // Initialize mock connectivity observer for all tests
@@ -99,6 +92,12 @@ class CreateMeetingScreenTest {
         ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
     providerField.isAccessible = true
     providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
+
+    viewModel =
+        CreateMeetingViewModel(
+            repository = repositoryMock,
+            locationRepository = locationRepositoryMock,
+            getCurrentUserId = { "test-user-id" })
 
     composeTestRule.setContent {
       CreateMeetingScreen(

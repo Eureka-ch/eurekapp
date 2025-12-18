@@ -2,12 +2,16 @@
 package ch.eureka.eurekapp.ui.map
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.map.Location
 import com.google.android.gms.maps.model.LatLng
 import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 /**
@@ -26,6 +30,10 @@ class MeetingLocationSelectionViewModel : ViewModel() {
 
   private val _uiState = MutableStateFlow(MeetingLocationSelectionUIState())
   val uiState: StateFlow<MeetingLocationSelectionUIState> = _uiState.asStateFlow()
+
+  private val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected =
+      connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
   /**
    * Updates the selected location.

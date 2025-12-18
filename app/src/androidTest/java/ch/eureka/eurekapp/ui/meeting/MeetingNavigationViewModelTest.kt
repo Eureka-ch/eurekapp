@@ -3,11 +3,14 @@ Note: This file was co-authored by Claude Code.
 */
 package ch.eureka.eurekapp.ui.meeting
 
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import io.mockk.coEvery
 import io.mockk.every
@@ -44,6 +47,7 @@ class MeetingNavigationViewModelTest {
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var viewModel: MeetingNavigationViewModel
   private lateinit var repositoryMock: MeetingRepository
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private val testProjectId = "project123"
   private val testMeetingId = "meeting456"
   private val testApiKey = "test_api_key"
@@ -72,6 +76,18 @@ class MeetingNavigationViewModelTest {
   fun setup() {
     Dispatchers.setMain(testDispatcher)
     repositoryMock = mockk(relaxed = true)
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
   }
 
   @After

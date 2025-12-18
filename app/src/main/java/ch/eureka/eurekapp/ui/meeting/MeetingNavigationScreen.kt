@@ -5,6 +5,7 @@ package ch.eureka.eurekapp.ui.meeting
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.horizontalScroll
@@ -57,7 +58,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.R
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
@@ -178,12 +178,14 @@ fun MeetingNavigationScreen(
 
   val uiState by viewModel.uiState.collectAsState()
 
-  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
-  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+  val isConnected by viewModel.isConnected.collectAsState()
+  val context = LocalContext.current
 
   // Navigate back if connection is lost
   LaunchedEffect(isConnected) {
     if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
       onNavigateBack()
     }
   }

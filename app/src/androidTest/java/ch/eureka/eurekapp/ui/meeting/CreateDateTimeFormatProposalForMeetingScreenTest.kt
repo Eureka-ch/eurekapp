@@ -81,13 +81,6 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
 
     repositoryMock.meetingToReturn = baseMeeting
 
-    viewModel =
-        CreateDateTimeFormatProposalForMeetingViewModel(
-            projectId = testProjectId,
-            meetingId = testMeetingId,
-            repository = repositoryMock,
-            getCurrentUserId = { testUserId })
-
     val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     // Initialize mock connectivity observer for all tests
@@ -99,6 +92,13 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
         ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
     providerField.isAccessible = true
     providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
+
+    viewModel =
+        CreateDateTimeFormatProposalForMeetingViewModel(
+            projectId = testProjectId,
+            meetingId = testMeetingId,
+            repository = repositoryMock,
+            getCurrentUserId = { testUserId })
 
     composeTestRule.setContent {
       CreateDateTimeFormatProposalForMeetingScreen(

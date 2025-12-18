@@ -1,6 +1,7 @@
 // Co-Authored-By: Claude Opus 4.5 and Grok
 package ch.eureka.eurekapp.screens.subscreens.tasks.editing
 
+import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -33,7 +34,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.tasks.EditTaskState
@@ -87,11 +87,10 @@ fun EditTaskScreen(
   val context = LocalContext.current
   val scrollState = rememberScrollState()
   var showDeleteDialog by remember { mutableStateOf(false) }
-  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
-  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+  val isConnected by editTaskViewModel.isConnected.collectAsState()
 
   // Navigate back if connection is lost
-  HandleConnectionLoss(isConnected, navigationController)
+  HandleConnectionLoss(isConnected, navigationController, context)
 
   // File picker launcher for any file type
   val filePickerLauncher =
@@ -249,9 +248,15 @@ fun EditTaskScreen(
 }
 
 @Composable
-private fun HandleConnectionLoss(isConnected: Boolean, navigationController: NavHostController) {
+private fun HandleConnectionLoss(
+    isConnected: Boolean,
+    navigationController: NavHostController,
+    context: Context
+) {
   LaunchedEffect(isConnected) {
     if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
       navigationController.popBackStack()
     }
   }
