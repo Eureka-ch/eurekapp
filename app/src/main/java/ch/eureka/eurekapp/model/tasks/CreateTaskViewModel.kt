@@ -63,6 +63,7 @@ class CreateTaskViewModel(
     val result = state.customData.validate(template.definedFields)
     return result is ch.eureka.eurekapp.model.data.task.ValidationResult.Success
   }
+
   private val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
   val isConnected =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
