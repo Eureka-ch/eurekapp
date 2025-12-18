@@ -11,7 +11,7 @@ import ch.eureka.eurekapp.model.database.entities.MessageEntity
  * This abstract class serves as the main access point for the underlying SQLite connection. It
  * defines the entities (tables) and version of the database.
  */
-@Database(entities = [MessageEntity::class], version = 1, exportSchema = true)
+@Database(entities = [MessageEntity::class], version = 2, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
 
   /** Provides access to the [MessageDao] for interacting with the `local_notes` table. */
