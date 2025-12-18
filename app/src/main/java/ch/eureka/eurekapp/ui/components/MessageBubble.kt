@@ -183,7 +183,7 @@ private fun MessageDisplay(messageDisplayState: MessageDisplayState) {
                     text =
                         buildAnnotatedText(
                             messageDisplayState.text, messageDisplayState.interactions.onLinkClick),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = messageDisplayState.contentColor,
                     modifier = Modifier.testTag(MessageBubbleTestTags.TEXT))
               }
@@ -267,10 +267,10 @@ private fun getBubbleColors(isFromCurrentUser: Boolean): Triple<Color, Color, Al
         MaterialTheme.colorScheme.onPrimaryContainer,
         Alignment.CenterEnd)
   } else {
-    // More pleasant color for assistant messages - using tertiary container
+    // Gray color for assistant messages
     Triple(
-        MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8f),
-        MaterialTheme.colorScheme.onTertiaryContainer,
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+        MaterialTheme.colorScheme.onSurfaceVariant,
         Alignment.CenterStart)
   }
 }

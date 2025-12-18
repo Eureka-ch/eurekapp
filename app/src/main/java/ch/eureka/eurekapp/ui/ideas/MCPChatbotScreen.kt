@@ -61,7 +61,15 @@ private val MOCK_THINKING_STEPS = listOf(
  * Mock responses - Returns AI meeting integration feature idea
  */
 private fun getMockResponse(userMessage: String): String {
-  return "A great feature would be to integrate AI to be a part of the meeting and add inputs when necessary."
+  return """A great feature would be to integrate AI to be a part of the meeting and add inputs when necessary.
+
+How to integrate it:
+
+• Create an AI service module
+• Add real-time meeting transcription
+• Build an AI input detection system
+• Connect to meeting flow
+• Test with sample meetings"""
 }
 
 /**
