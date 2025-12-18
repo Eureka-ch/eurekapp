@@ -1,10 +1,11 @@
 /*
-Note: This file was co-authored by Claude Code.
+Note: This file was co-authored by Claude Code and Grok.
 */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.horizontalScroll
@@ -176,6 +177,18 @@ fun MeetingNavigationScreen(
 ) {
 
   val uiState by viewModel.uiState.collectAsState()
+
+  val isConnected by viewModel.isConnected.collectAsState()
+  val context = LocalContext.current
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
+      onNavigateBack()
+    }
+  }
 
   // Track selected travel mode
   var selectedTravelMode by remember { mutableStateOf(TravelMode.DRIVING) }

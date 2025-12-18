@@ -2,6 +2,8 @@ package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
 import android.net.Uri
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
@@ -58,6 +60,7 @@ class CreateTaskViewModelTest {
   private lateinit var mockTemplateRepository: MockTaskTemplateRepository
   private lateinit var viewModel: CreateTaskViewModel
   private lateinit var mockContext: Context
+  private lateinit var mockConnectivityObserver: ConnectivityObserver
 
   @Before
   fun setUp() {
@@ -73,6 +76,16 @@ class CreateTaskViewModelTest {
           every { this@mockk.contentResolver } returns contentResolver
           every { contentResolver.delete(any(), any(), any()) } returns 1
         }
+
+    // Mock connectivity observer
+    mockConnectivityObserver = mockk(relaxed = true)
+    every { mockConnectivityObserver.isConnected } returns flowOf(true)
+
+    // Set mock to ConnectivityObserverProvider
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
   }
 
   @After
