@@ -1,5 +1,5 @@
 /*
-Portions of the code in this file were written with the help of chatGPT and Gemini.
+Portions of the code in this file were written with the help of chatGPT, Gemini, and Grok.
 Portions of the code in this file are copy-pasted from the Bootcamp solution B3 provided by the SwEnt staff.
 */
 
@@ -29,7 +29,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 
 /** Test tags for the create meeting proposal for datetime/format screen. */
 object CreateDateTimeFormatMeetingProposalScreenTestTags {
@@ -49,6 +52,7 @@ object CreateDateTimeFormatMeetingProposalScreenTestTags {
  * @property projectId The project ID in which the meeting to add a proposal resides.
  * @property meetingId The meeting ID of the meeting to add the datetime/format proposal to.
  * @property onDone Function executed when the user have saved their meeting proposal.
+ * @property onBackClick Function executed when the user wants to navigate back.
  * @property createMeetingProposalViewModel ViewModel associated to that screen.
  */
 @Composable
@@ -56,6 +60,7 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
     projectId: String,
     meetingId: String,
     onDone: () -> Unit,
+    onBackClick: () -> Unit = {},
     createMeetingProposalViewModel: CreateDateTimeFormatProposalForMeetingViewModel = viewModel {
       CreateDateTimeFormatProposalForMeetingViewModel(projectId, meetingId)
     }
@@ -63,6 +68,16 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
 
   val context = LocalContext.current
   val uiState by createMeetingProposalViewModel.uiState.collectAsState()
+
+  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      onBackClick()
+    }
+  }
 
   LaunchedEffect(uiState.errorMsg) {
     uiState.errorMsg?.let {
@@ -80,6 +95,11 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
   LaunchedEffect(Unit) { createMeetingProposalViewModel.loadMeeting() }
 
   Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "Create Meeting Proposal",
+            navigationIcon = { BackButton(onClick = onBackClick) })
+      },
       content = { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(10.dp)) {
           Text(
