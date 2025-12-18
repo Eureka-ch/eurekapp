@@ -261,12 +261,13 @@ fun IdeasContent(
             modifier = Modifier.align(Alignment.Center).padding(Spacing.lg).testTag("emptyState"))
       }
       viewMode == IdeasViewMode.CONVERSATION && conversationState.selectedIdea != null -> {
-        IdeaConversationContent(
+        // Use MCP Chatbot Screen instead of regular conversation
+        MCPChatbotScreen(
             idea = conversationState.selectedIdea,
-            messages = conversationState.messages,
-            currentUserId = conversationState.currentUserId,
-            listState = lazyListState,
-            onBackToList = conversationState.onBackToList)
+            projectName = selectedProject?.name,
+            onNavigateBack = conversationState.onBackToList,
+            currentUserId = conversationState.currentUserId ?: "user"
+        )
       }
       else -> {
         IdeasListContent(
