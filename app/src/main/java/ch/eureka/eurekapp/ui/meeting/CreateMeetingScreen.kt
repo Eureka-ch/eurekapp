@@ -160,6 +160,17 @@ fun CreateMeetingScreen(
   val context = LocalContext.current
   val uiState by createMeetingViewModel.uiState.collectAsState()
 
+  val isConnected by createMeetingViewModel.isConnected.collectAsState()
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
+      onBackClick()
+    }
+  }
+
   LaunchedEffect(uiState.errorMsg) {
     uiState.errorMsg?.let {
       Toast.makeText(context, it, Toast.LENGTH_SHORT).show()

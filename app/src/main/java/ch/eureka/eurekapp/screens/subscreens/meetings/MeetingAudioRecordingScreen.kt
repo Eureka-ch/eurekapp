@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.screens.subscreens.meetings
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -85,6 +86,10 @@ fun MeetingAudioRecordingScreen(
     onNavigateToTranscript: (String, String) -> Unit = { _, _ -> },
     onBackClick: () -> Unit = {}
 ) {
+  val isConnected by audioRecordingViewModel.isConnected.collectAsState()
+
+  // Navigate back if connection is lost
+  HandleConnectionLoss(isConnected, onBackClick, context)
 
   var microphonePermissionIsGranted by remember {
     mutableStateOf(
@@ -353,5 +358,16 @@ private fun HandleMicrophonePermission(
 private fun HandleExistingTranscript(meeting: Meeting?, onTranscriptFound: () -> Unit) {
   LaunchedEffect(meeting?.transcriptId) {
     if (meeting?.transcriptId?.isNotBlank() == true) onTranscriptFound()
+  }
+}
+
+@Composable
+private fun HandleConnectionLoss(isConnected: Boolean, onBackClick: () -> Unit, context: Context) {
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
+      onBackClick()
+    }
   }
 }

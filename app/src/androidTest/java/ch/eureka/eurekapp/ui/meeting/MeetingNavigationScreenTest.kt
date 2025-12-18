@@ -1,5 +1,5 @@
 /*
-Note: This file was co-authored by Claude Code.
+Note: This file was co-authored by Claude Code and Grok.
 */
 package ch.eureka.eurekapp.ui.meeting
 
@@ -11,12 +11,15 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import io.mockk.every
 import io.mockk.mockk
@@ -48,6 +51,7 @@ class MeetingNavigationScreenTest {
       GrantPermissionRule.grant(Manifest.permission.ACCESS_FINE_LOCATION)
 
   private lateinit var repositoryMock: MeetingRepository
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private val testProjectId = "project123"
   private val testMeetingId = "meeting456"
   private val testApiKey = "test_api_key"
@@ -75,6 +79,18 @@ class MeetingNavigationScreenTest {
   @Before
   fun setup() {
     repositoryMock = mockk(relaxed = true)
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer for all tests
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
   }
 
   private fun setContent(meeting: Meeting?, onNavigateBack: () -> Unit = {}) {
@@ -560,5 +576,28 @@ class MeetingNavigationScreenTest {
     composeTestRule.onNodeWithText("Transit").assertIsDisplayed()
     composeTestRule.onNodeWithText("Bike").assertIsDisplayed()
     composeTestRule.onNodeWithText("Walk").assertIsDisplayed()
+  }
+
+  @Test
+  fun meetingNavigationScreen_navigatesBackWhenConnectionLost() = runTest {
+    var navigatedBack = false
+    setContent(meeting = testMeeting, onNavigateBack = { navigatedBack = true })
+
+    composeTestRule.waitForIdle()
+
+    // Verify we're on MeetingNavigationScreen
+    composeTestRule
+        .onNodeWithTag(MeetingNavigationScreenTestTags.NAVIGATION_SCREEN)
+        .assertIsDisplayed()
+
+    // Simulate connection loss
+    mockConnectivityObserver.setConnected(false)
+
+    composeTestRule.waitForIdle()
+
+    // Verify onNavigateBack was called
+    composeTestRule.waitUntil(timeoutMillis = 5000) { navigatedBack }
+
+    assert(navigatedBack)
   }
 }

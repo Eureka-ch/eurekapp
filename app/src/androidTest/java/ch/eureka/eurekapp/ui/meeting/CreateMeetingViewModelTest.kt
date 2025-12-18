@@ -2,6 +2,8 @@
 package ch.eureka.eurekapp.ui.meeting
 
 import android.util.Log
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
@@ -10,6 +12,7 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -48,6 +51,7 @@ class CreateMeetingViewModelTest {
   private lateinit var viewModel: CreateMeetingViewModel
   private lateinit var repositoryMock: MockMeetingRepository
   private lateinit var locationRepositoryMock: MockLocationRepository
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private lateinit var projectRepositoryMock: MockProjectRepository
 
   private var currentUserId: String? = "test-user-id"
@@ -69,6 +73,18 @@ class CreateMeetingViewModelTest {
     every { testProject.name } returns "Test Project"
     // Mock members: current user + one other
     every { testProject.memberIds } returns listOf("test-user-id", "other-user")
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
 
     mockkStatic(Log::class)
     every { Log.e(any(), any(), any()) } returns 0
