@@ -126,7 +126,6 @@ object MeetingScreenTestTags {
 /**
  * Config for the main composable to draw the meetings screen.
  *
- * @property projectId The ID of the project to display the meetings from.
  * @property onCreateMeeting Callback executed when the users creates a new meeting.
  * @property onMeetingClick Callback when a meeting card is clicked, receives projectId and
  *   meetingId.
@@ -137,7 +136,6 @@ object MeetingScreenTestTags {
  * @property onRecord Callback executed when the user clicks on the record button.
  */
 data class MeetingScreenConfig(
-    val projectId: String,
     val onCreateMeeting: (Boolean) -> Unit,
     val onMeetingClick: (String, String) -> Unit = { _, _ -> },
     val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
@@ -204,7 +202,7 @@ fun MeetingScreen(
     }
   }
 
-  LaunchedEffect(Unit) { meetingViewModel.loadMeetings(config.projectId) }
+  LaunchedEffect(Unit) { meetingViewModel.loadMeetings() }
 
   val errorNotLoggedIn = stringResource(R.string.error_not_logged_in)
   LaunchedEffect(meetingViewModel.userId) {
@@ -303,7 +301,6 @@ private fun MeetingScreenContent(
                       modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
                       meetings = uiState.upcomingMeetings,
                       tabName = MeetingTab.UPCOMING.name.lowercase(),
-                      projectId = config.projectId,
                       isCurrentUserId = { uid -> meetingViewModel.userId == uid },
                       onMeetingClick = config.onMeetingClick,
                       onVoteForMeetingProposalClick = config.onVoteForMeetingProposalClick,
@@ -321,7 +318,6 @@ private fun MeetingScreenContent(
                       modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
                       meetings = uiState.pastMeetings,
                       tabName = MeetingTab.PAST.name.lowercase(),
-                      projectId = config.projectId,
                       isCurrentUserId = { uid -> meetingViewModel.userId == uid },
                       onMeetingClick = config.onMeetingClick,
                       isConnected = uiState.isConnected),
@@ -336,7 +332,6 @@ private fun MeetingScreenContent(
  * @property modifier Modifier used in the component.
  * @property meetings Meetings list to display.
  * @property tabName Name of the tab in which to display these meetings.
- * @property projectId The ID of the project containing the meetings.
  * @property isCurrentUserId Function taking as argument a user ID and return true if this is the Id
  *   of the user that is currently logged in and false otherwise.
  * @property onMeetingClick Callback when a meeting card is clicked.
@@ -352,7 +347,6 @@ data class MeetingsListConfig(
     val modifier: Modifier,
     val meetings: List<Meeting>,
     val tabName: String,
-    val projectId: String = "",
     val isCurrentUserId: (String) -> Boolean,
     val onMeetingClick: (String, String) -> Unit = { _, _ -> },
     val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
@@ -413,15 +407,15 @@ fun MeetingsList(
                 config =
                     MeetingCardConfig(
                         isCurrentUserId = config.isCurrentUserId,
-                        onClick = { config.onMeetingClick(config.projectId, meeting.meetingID) },
+                        onClick = { config.onMeetingClick(meeting.projectId, meeting.meetingID) },
                         onJoinMeeting = { _ -> handleJoinMeeting(context, meeting.link) },
                         onVoteForMeetingProposals = { isConnected ->
                           config.onVoteForMeetingProposalClick(
-                              config.projectId, meeting.meetingID, isConnected)
+                              meeting.projectId, meeting.meetingID, isConnected)
                         },
                         onDirections = { isConnected ->
                           config.onNavigateToMeeting(
-                              config.projectId, meeting.meetingID, isConnected)
+                              meeting.projectId, meeting.meetingID, isConnected)
                         },
                         onCloseVotes = { meeting, isConnected ->
                           config.onCloseVotes(meeting, isConnected)
@@ -448,17 +442,15 @@ fun MeetingsList(
                               })
                         },
                         isMeetingAddedToCalendar =
-                            registeredMeetings.value.getOrElse(
-                                meeting.meetingID,
-                                {
-                                  if (meeting.status == MeetingStatus.SCHEDULED) {
-                                    calendarViewModel.checkIsMeetingRegisteredInCalendar(
-                                        context.contentResolver, meeting)
-                                  } else {
-                                    true
-                                  }
-                                  false
-                                }),
+                            registeredMeetings.value.getOrElse(meeting.meetingID) {
+                              if (meeting.status == MeetingStatus.SCHEDULED) {
+                                calendarViewModel.checkIsMeetingRegisteredInCalendar(
+                                    context.contentResolver, meeting)
+                              } else {
+                                true
+                              }
+                              false
+                            },
                         isConnected = config.isConnected,
                     ))
           }

@@ -1,4 +1,4 @@
-/* Portions of the code in this file were written with the help of Gemini. */
+/* Portions of the code in this file were written with the help of Gemini and Grok. */
 package ch.eureka.eurekapp.ui.map
 
 import androidx.compose.ui.test.assertHasClickAction
@@ -9,7 +9,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.android.gms.maps.model.LatLng
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -28,14 +31,29 @@ class MeetingLocationSelectionScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private lateinit var viewModel: MeetingLocationSelectionViewModel
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private var savedLocation: Location? = null
   private var onBackCalled: Boolean = false
 
   @Before
   fun setup() {
-    viewModel = MeetingLocationSelectionViewModel()
     savedLocation = null
     onBackCalled = false
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer for all tests
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
+
+    // NOW create the ViewModel after the mock is set
+    viewModel = MeetingLocationSelectionViewModel()
 
     composeTestRule.setContent {
       MeetingLocationSelectionScreen(
@@ -111,5 +129,23 @@ class MeetingLocationSelectionScreenTest {
   @Test
   fun mapClicksTriggerViewModelFunctions() {
     composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.GOOGLE_MAP).assertIsDisplayed()
+  }
+
+  @Test
+  fun meetingLocationSelectionScreen_navigatesBackWhenConnectionLost() {
+    composeTestRule.waitForIdle()
+
+    // Verify we're on MeetingLocationSelectionScreen
+    composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.SCREEN_TITLE).assertIsDisplayed()
+
+    // Simulate connection loss
+    mockConnectivityObserver.setConnected(false)
+
+    composeTestRule.waitForIdle()
+
+    // Verify onBack was called
+    composeTestRule.waitUntil(timeoutMillis = 5000) { onBackCalled }
+
+    assert(onBackCalled)
   }
 }

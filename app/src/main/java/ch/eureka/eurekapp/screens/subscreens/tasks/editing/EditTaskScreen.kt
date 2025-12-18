@@ -1,6 +1,7 @@
 // Co-Authored-By: Claude Opus 4.5 and Grok
 package ch.eureka.eurekapp.screens.subscreens.tasks.editing
 
+import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -88,7 +89,10 @@ fun EditTaskScreen(
   val context = LocalContext.current
   val scrollState = rememberScrollState()
   var showDeleteDialog by remember { mutableStateOf(false) }
-  val isConnected = true // Assume online for edit screen
+  val isConnected by editTaskViewModel.isConnected.collectAsState()
+
+  // Navigate back if connection is lost
+  HandleConnectionLoss(isConnected, navigationController, context)
 
   // File picker launcher for any file type
   val filePickerLauncher =
@@ -249,6 +253,21 @@ fun EditTaskScreen(
         showDeleteDialog = false
         editTaskViewModel.deleteTask(projectId, taskId)
       })
+}
+
+@Composable
+private fun HandleConnectionLoss(
+    isConnected: Boolean,
+    navigationController: NavHostController,
+    context: Context
+) {
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
+      navigationController.popBackStack()
+    }
+  }
 }
 
 @Composable

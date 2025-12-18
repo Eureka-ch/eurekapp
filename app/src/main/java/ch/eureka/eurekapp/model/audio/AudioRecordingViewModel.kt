@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
@@ -14,9 +15,11 @@ import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
@@ -33,6 +36,10 @@ class AudioRecordingViewModel(
 
   private val _recordingTimeInSeconds: MutableStateFlow<Long> = MutableStateFlow(0L)
   val recordingTimeInSeconds = _recordingTimeInSeconds.asStateFlow()
+
+  private val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected =
+      connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
   fun startRecording(context: Context, fileName: String) {
     val createdRecordingUri = recordingRepository.createRecording(context, fileName)

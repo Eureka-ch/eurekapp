@@ -1,6 +1,7 @@
-/* Portions of the code in this file were written with the help of Gemini. */
+/* Portions of the code in this file were written with the help of Gemini and Grok. */
 package ch.eureka.eurekapp.ui.map
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,10 +15,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -56,6 +59,19 @@ fun MeetingLocationSelectionScreen(
     viewModel: MeetingLocationSelectionViewModel = viewModel()
 ) {
   val uiState by viewModel.uiState.collectAsState()
+
+  val isConnected by viewModel.isConnected.collectAsState()
+
+  val context = LocalContext.current
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
+      onBack()
+    }
+  }
 
   val cameraPositionState = rememberCameraPositionState {
     position = CameraPosition.fromLatLngZoom(uiState.initialCameraPosition, 12f)

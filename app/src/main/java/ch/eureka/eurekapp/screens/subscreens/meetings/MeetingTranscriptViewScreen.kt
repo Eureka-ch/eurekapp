@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.screens.subscreens.meetings
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,11 +24,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -38,7 +41,10 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.meeting.TranscriptViewModel
 import ch.eureka.eurekapp.ui.theme.Typography
 
-/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
+/**
+ * Note :This file was partially written by ChatGPT (GPT-5) and Grok Co-author : GPT-5 Co-author :
+ * Grok
+ */
 
 /** Test tags for MeetingTranscriptViewScreen UI elements */
 object TranscriptScreenTestTags {
@@ -178,6 +184,18 @@ fun MeetingTranscriptViewScreen(
     onNavigateBack: () -> Unit
 ) {
   val uiState by viewModel.uiState.collectAsState()
+  val isConnected by viewModel.isConnected.collectAsState()
+
+  val context = LocalContext.current
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
+      onNavigateBack()
+    }
+  }
 
   Scaffold(
       modifier = Modifier.fillMaxSize().testTag(TranscriptScreenTestTags.TRANSCRIPT_SCREEN),

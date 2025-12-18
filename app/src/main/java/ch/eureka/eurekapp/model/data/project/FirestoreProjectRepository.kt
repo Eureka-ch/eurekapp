@@ -4,6 +4,8 @@ import ch.eureka.eurekapp.model.data.FirestorePaths
 import ch.eureka.eurekapp.model.data.activity.ActivityLogger
 import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
+import ch.eureka.eurekapp.model.data.meeting.MeetingRole
+import ch.eureka.eurekapp.model.data.meeting.Participant
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -183,14 +185,22 @@ class FirestoreProjectRepository(
   ): Result<Unit> = runCatching {
     val projectRef = firestore.collection(FirestorePaths.PROJECTS).document(projectId)
 
+    val meetingsSnapshot = projectRef.collection(FirestorePaths.MEETINGS).get().await()
+
     firestore
         .runBatch { batch ->
-          // Update memberIds array
           batch.update(projectRef, "memberIds", FieldValue.arrayUnion(userId))
 
-          // Create member document
           val member = Member(userId = userId, role = role)
           batch[projectRef.collection("members").document(userId)] = member
+
+          for (meetingDoc in meetingsSnapshot.documents) {
+            batch.update(meetingDoc.reference, "participantIds", FieldValue.arrayUnion(userId))
+
+            val meetingParticipant = Participant(userId = userId, role = MeetingRole.PARTICIPANT)
+            batch[meetingDoc.reference.collection("participants").document(userId)] =
+                meetingParticipant
+          }
         }
         .await()
 
@@ -207,13 +217,19 @@ class FirestoreProjectRepository(
   override suspend fun removeMember(projectId: String, userId: String): Result<Unit> = runCatching {
     val projectRef = firestore.collection(FirestorePaths.PROJECTS).document(projectId)
 
+    val meetingsSnapshot = projectRef.collection(FirestorePaths.MEETINGS).get().await()
+
     firestore
         .runBatch { batch ->
-          // Remove from memberIds array
           batch.update(projectRef, "memberIds", FieldValue.arrayRemove(userId))
 
-          // Delete member document
           batch.delete(projectRef.collection("members").document(userId))
+
+          for (meetingDoc in meetingsSnapshot.documents) {
+            batch.update(meetingDoc.reference, "participantIds", FieldValue.arrayRemove(userId))
+
+            batch.delete(meetingDoc.reference.collection("participants").document(userId))
+          }
         }
         .await()
   }

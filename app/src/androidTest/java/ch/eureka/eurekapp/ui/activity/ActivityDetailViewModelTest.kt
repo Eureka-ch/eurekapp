@@ -63,48 +63,6 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun activityDetailViewModel_deleteActivity_setsDeleteSuccess() {
-    val activity =
-        createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
-    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
-    coEvery { repository.deleteActivity(testActivityId) } returns Result.success(Unit)
-
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
-    viewModel =
-        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
-    Thread.sleep(1000)
-    viewModel.deleteActivity()
-    Thread.sleep(1000)
-    assertNotNull("ViewModel should exist", viewModel)
-    coEvery { repository.deleteActivity(testActivityId) }
-  }
-
-  @Test
-  fun activityDetailViewModel_deleteActivityOffline_setsError() {
-    every { connectivityObserver.isConnected } returns flowOf(false)
-    val activity =
-        createActivity(
-            testActivityId, EntityType.MEETING, "Meeting", ActivityType.CREATED, testEntityId)
-    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
-
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
-    viewModel =
-        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
-
-    Thread.sleep(1000)
-    viewModel.deleteActivity()
-    Thread.sleep(1000)
-    assertNotNull("ViewModel should exist", viewModel)
-    every { connectivityObserver.isConnected }
-  }
-
-  @Test
   fun activityDetailViewModel_markShareSuccess_updatesState() {
     val activity =
         createActivity(

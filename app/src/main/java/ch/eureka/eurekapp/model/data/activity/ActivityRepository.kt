@@ -18,8 +18,7 @@ interface ActivityRepository {
    * Fetches all activities that the specific user is allowed to see.
    *
    * This method determines the user's project memberships and retrieves a combined feed of
-   * activities from those projects. It also includes activities from global or test contexts (like
-   * 'test-project-id') where applicable.
+   * activities from those projects.
    *
    * @param userId The unique identifier of the user requesting the activities.
    * @return A [Flow] emitting the list of [Activity] objects sorted by timestamp (descending).

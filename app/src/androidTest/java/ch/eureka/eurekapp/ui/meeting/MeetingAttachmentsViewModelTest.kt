@@ -1,5 +1,6 @@
+/* Portions of this code were generated with the help of Gemini 3 Pro. */
 package ch.eureka.eurekapp.ui.meeting
-// Portions of this code were generated using the help of Gemini 3 Pro
+
 import android.content.ContentResolver
 import android.content.Context
 import android.database.Cursor
@@ -10,6 +11,8 @@ import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
+import ch.eureka.eurekapp.model.data.meeting.MeetingRole
+import ch.eureka.eurekapp.model.data.meeting.Participant
 import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageMetadata
@@ -18,6 +21,7 @@ import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.*
@@ -102,6 +106,80 @@ class MeetingAttachmentsViewModelTest {
     }
 
     override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
+      return Result.failure(Exception("dummy"))
+    }
+  }
+
+  private class MockedMeetingRepositoryForSuccess : MeetingRepository {
+    val projectId = "proj1"
+    val meetingId = "meet1"
+    val downloadUrl = "http://fake.url/file.pdf"
+    val existingMeeting =
+        Meeting(meetingID = meetingId, projectId = projectId, attachmentUrls = emptyList())
+
+    override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
+      return flowOf(existingMeeting)
+    }
+
+    override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
+
+    override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
+
+    override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
+
+    override suspend fun createMeeting(
+        meeting: Meeting,
+        creatorId: String,
+        creatorRole: MeetingRole
+    ): Result<String> {
+      return Result.success("")
+    }
+
+    override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun addParticipant(
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun removeParticipant(
+        projectId: String,
+        meetingId: String,
+        userId: String
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun updateParticipantRole(
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
       return Result.failure(Exception("Dummy exception"))
     }
   }
@@ -189,6 +267,91 @@ class MeetingAttachmentsViewModelTest {
     assertEquals("Failed to get the size of the file!", errorMsg)
   }
 
+  private class MockedMeetingRepositoryForFailsWhenMeetingDoesNotExist : MeetingRepository {
+    override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
+      return flowOf(null)
+    }
+
+    override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
+
+    override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
+
+    override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
+
+    override suspend fun createMeeting(
+        meeting: Meeting,
+        creatorId: String,
+        creatorRole: MeetingRole
+    ): Result<String> {
+      return Result.success("")
+    }
+
+    override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
+      return Result.failure(IllegalArgumentException(""))
+    }
+
+    override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> {
+      return flowOf(listOf())
+    }
+
+    override suspend fun addParticipant(
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
+    ): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override suspend fun removeParticipant(
+        projectId: String,
+        meetingId: String,
+        userId: String
+    ): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override suspend fun updateParticipantRole(
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
+    ): Result<Unit> {
+      return Result.success(Unit)
+    }
+  }
+
+  private class MockedFileStorageRepositoryForFailsWhenMeetingDoesNotExist : FileStorageRepository {
+    override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
+      return Result.success("Dummy")
+    }
+
+    override suspend fun uploadFile(
+        storagePath: String,
+        fileDescriptor: ParcelFileDescriptor
+    ): Result<String> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
+      return Result.failure(IllegalArgumentException(""))
+    }
+  }
+
   @Test
   fun uploadMeetingFileToFirestoreFailsWhenMeetingNoLongerExists() = runTest {
     val downloadUrl = "http://fake.url/file.pdf"
@@ -226,6 +389,79 @@ class MeetingAttachmentsViewModelTest {
 
     assertTrue(failureCalled)
     assertTrue(errorMsg.contains("no longer exists"))
+    // Check that failure was called
+    assertTrue("Expected onFailure to be called", failureCalled)
+    assertTrue("Expected an error message but got: '$errorMsg'", errorMsg != null)
+
+    // Convert to string for checking
+    val errorString = errorMsg.toString()
+    assertTrue(
+        "Expected message about meeting not existing, got: '$errorString'",
+        errorString.contains("no longer exists") || errorString.contains("attachment"))
+  }
+
+  private class MockedMeetingRepositoryForFailsWhenUpdateFails : MeetingRepository {
+    override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
+      return flowOf(Meeting())
+    }
+
+    override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
+      TODO("Not yet implemented")
+    }
+
+    override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> {
+      TODO("Not yet implemented")
+    }
+
+    override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
+
+    override suspend fun createMeeting(
+        meeting: Meeting,
+        creatorId: String,
+        creatorRole: MeetingRole
+    ): Result<String> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
+      return Result.failure(IllegalArgumentException(""))
+    }
+
+    override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun addParticipant(
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun removeParticipant(
+        projectId: String,
+        meetingId: String,
+        userId: String
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun updateParticipantRole(
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
   }
 
   @Test

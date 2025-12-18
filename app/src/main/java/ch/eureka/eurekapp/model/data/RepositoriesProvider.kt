@@ -30,9 +30,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 
 /**
  * Central singleton provider for all Data Layer repositories in the application.
@@ -50,8 +47,6 @@ object RepositoriesProvider {
 
   private var applicationContext: Context? = null
   private const val ERROR_MSG = "RepositoryProvider.initialize(context) must be called first"
-
-  private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
   /**
    * Initializes the provider with the application context.
@@ -129,8 +124,9 @@ object RepositoriesProvider {
         localDao = database.messageDao(),
         firestoreRepo = firestoreRepo,
         userPreferences = _userPreferencesRepository,
-        auth = FirebaseAuth.getInstance(),
-        applicationScope = applicationScope)
+        auth = FirebaseAuth.getInstance()
+        // Removed applicationScope argument as sync logic has been removed
+        )
   }
 
   private val _conversationRepository: ConversationRepository by lazy {

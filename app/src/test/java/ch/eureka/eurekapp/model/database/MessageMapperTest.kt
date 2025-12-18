@@ -26,9 +26,7 @@ class MessageMapperTest {
             messageId = "msg_123",
             text = "Hello World",
             senderId = "user_1",
-            createdAtMillis = 1600000000000L,
-            isPendingSync = true,
-            isPrivacyLocalOnly = false)
+            createdAtMillis = 1600000000000L)
     val domain = entity.toDomainModel()
     assertEquals("msg_123", domain.messageID)
     assertEquals("Hello World", domain.text)
@@ -53,7 +51,5 @@ class MessageMapperTest {
     assertEquals("Domain Message", entity.text)
     assertEquals("user_2", entity.senderId)
     assertEquals(1700000000000L, entity.createdAtMillis)
-    assertEquals(false, entity.isPendingSync)
-    assertEquals(false, entity.isPrivacyLocalOnly)
   }
 }

@@ -1,3 +1,4 @@
+/* Portions of this file where written with the help of Gemini. */
 package ch.eureka.eurekapp.ui.home
 
 import androidx.lifecycle.ViewModel
@@ -15,20 +16,29 @@ import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.Timestamp
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
+/** Limit of items to display in the home overview sections. */
 const val HOME_ITEMS_LIMIT = 3
 
+/**
+ * UI state for the Home Overview screen.
+ *
+ * @property currentUserName The display name of the current user.
+ * @property upcomingTasks List of upcoming tasks assigned to the user.
+ * @property upcomingMeetings List of upcoming meetings for the user.
+ * @property recentProjects List of projects recently updated.
+ * @property isLoading Whether the data is currently loading.
+ * @property isConnected Whether the device is connected to the internet.
+ * @property error Error message if any operation failed.
+ */
 data class HomeOverviewUiState(
     val currentUserName: String = "",
     val upcomingTasks: List<Task> = emptyList(),
@@ -39,6 +49,16 @@ data class HomeOverviewUiState(
     val error: String? = null,
 )
 
+/**
+ * View Model for the Home Overview screen. Manages data fetching for tasks, meetings, and projects
+ * summary.
+ *
+ * @param taskRepository Repository for Task data.
+ * @param projectRepository Repository for Project data.
+ * @param meetingRepository Repository for Meeting data.
+ * @param userRepository Repository for User data.
+ * @param connectivityFlow Flow indicating network connectivity status.
+ */
 class HomeOverviewViewModel(
     taskRepository: TaskRepository = RepositoriesProvider.taskRepository,
     projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
@@ -91,31 +111,19 @@ class HomeOverviewViewModel(
             emit(emptyList())
           }
 
-  @OptIn(ExperimentalCoroutinesApi::class)
   private val upcomingMeetings: Flow<List<Meeting>> =
-      projectsFlow.flatMapLatest { projects ->
-        if (projects.isEmpty()) {
-          flowOf(emptyList())
-        } else {
-          combine(
-                  projects.map { project ->
-                    meetingRepository
-                        .getMeetingsForCurrentUser(project.projectId, skipCache = false)
-                        .catch { throwable ->
-                          _error.value = throwable.message
-                          emit(emptyList())
-                        }
-                  }) { meetingsArrays ->
-                    meetingsArrays.flatMap { it.toList() }
-                  }
-              .map { meetings ->
-                meetings
-                    .filter { it.status != MeetingStatus.COMPLETED }
-                    .sortedBy { meeting -> meeting.datetime.toEpochMillisOrMax() }
-                    .take(HOME_ITEMS_LIMIT)
-              }
-        }
-      }
+      meetingRepository
+          .getMeetingsForCurrentUser(skipCache = false)
+          .map { meetings ->
+            meetings
+                .filter { it.status != MeetingStatus.COMPLETED }
+                .sortedBy { meeting -> meeting.datetime.toEpochMillisOrMax() }
+                .take(HOME_ITEMS_LIMIT)
+          }
+          .catch { throwable ->
+            _error.value = throwable.message
+            emit(emptyList())
+          }
 
   private val recentProjects: Flow<List<Project>> =
       projectsFlow.map { projects ->
@@ -125,6 +133,7 @@ class HomeOverviewViewModel(
   private val connectivity: StateFlow<Boolean> =
       connectivityFlow.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
+  /** The UI state exposed to the view. Combines all data flows into a single state object. */
   val uiState: StateFlow<HomeOverviewUiState> =
       combine(currentUserName, upcomingTasks, upcomingMeetings, recentProjects, connectivity) {
               name,

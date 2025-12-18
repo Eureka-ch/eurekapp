@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.R
+import ch.eureka.eurekapp.ui.components.ProjectDropdownMenu
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /*
@@ -57,8 +58,6 @@ Co-author: Claude 4.5 Sonnet
 object CreateConversationScreenTestTags {
   const val SCREEN = "CreateConversationScreen"
   const val TITLE = "CreateConversationTitle"
-  const val PROJECT_DROPDOWN = "ProjectDropdown"
-  const val PROJECT_DROPDOWN_ITEM = "ProjectDropdownItem"
   const val MEMBER_DROPDOWN = "MemberDropdown"
   const val MEMBER_DROPDOWN_ITEM = "MemberDropdownItem"
   const val CREATE_BUTTON = "CreateButton"
@@ -118,8 +117,10 @@ fun CreateConversationScreen(
 
           Spacer(modifier = Modifier.height(Spacing.lg))
 
-          ProjectDropdown(
-              uiState = uiState,
+          ProjectDropdownMenu(
+              projectsList = uiState.projects,
+              selectedProject = uiState.selectedProject,
+              isLoadingProjects = uiState.isLoadingProjects,
               projectDropdownExpanded = projectDropdownExpanded,
               onExpandedChange = { projectDropdownExpanded = it },
               onProjectSelect = { project ->
@@ -165,56 +166,6 @@ private fun ScreenHeader() {
       text = stringResource(R.string.create_conversation_description),
       style = MaterialTheme.typography.bodyMedium,
       color = Color.Gray)
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ProjectDropdown(
-    uiState: CreateConversationState,
-    projectDropdownExpanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    onProjectSelect: (ch.eureka.eurekapp.model.data.project.Project) -> Unit
-) {
-  Text(
-      text = stringResource(R.string.create_conversation_project_label),
-      style = MaterialTheme.typography.labelLarge,
-      fontWeight = FontWeight.Medium)
-  Spacer(modifier = Modifier.height(Spacing.xs))
-
-  ExposedDropdownMenuBox(
-      expanded = projectDropdownExpanded,
-      onExpandedChange = onExpandedChange,
-      modifier = Modifier.testTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN)) {
-        OutlinedTextField(
-            value = uiState.selectedProject?.name ?: "",
-            onValueChange = {},
-            readOnly = true,
-            placeholder = {
-              Text(stringResource(R.string.create_conversation_project_placeholder))
-            },
-            trailingIcon = {
-              if (uiState.isLoadingProjects) {
-                CircularProgressIndicator(
-                    modifier = Modifier.padding(end = 8.dp), strokeWidth = 2.dp)
-              } else {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = projectDropdownExpanded)
-              }
-            },
-            modifier =
-                Modifier.fillMaxWidth()
-                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable))
-
-        ExposedDropdownMenu(
-            expanded = projectDropdownExpanded, onDismissRequest = { onExpandedChange(false) }) {
-              uiState.projects.forEach { project ->
-                DropdownMenuItem(
-                    text = { Text(project.name) },
-                    onClick = { onProjectSelect(project) },
-                    modifier =
-                        Modifier.testTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN_ITEM))
-              }
-            }
-      }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

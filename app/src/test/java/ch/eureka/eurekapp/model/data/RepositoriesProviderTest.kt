@@ -110,7 +110,9 @@ class RepositoriesProviderTest {
             "_userPreferencesRepository",
             "_unifiedSelfNotesRepository",
             "_conversationRepository",
-            "_ideasRepository")
+            "_ideasRepository",
+            "_activityRepository" // Added missing repository
+            )
 
     lazyFields.forEach { fieldName ->
       try {

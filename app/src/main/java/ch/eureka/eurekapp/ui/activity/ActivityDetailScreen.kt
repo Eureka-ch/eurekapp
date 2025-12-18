@@ -48,7 +48,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -131,13 +130,6 @@ fun ActivityDetailScreen(
   val uiState by vm.uiState.collectAsState()
   val context = LocalContext.current
 
-  LaunchedEffect(uiState.deleteSuccess) {
-    if (uiState.deleteSuccess) {
-      Toast.makeText(context, "Activity deleted", Toast.LENGTH_SHORT).show()
-      onNavigateBack()
-    }
-  }
-
   Scaffold(
       modifier = Modifier.testTag(ActivityDetailScreenTestTags.ACTIVITY_DETAIL_SCREEN),
       topBar = {
@@ -185,7 +177,7 @@ fun ActivityDetailScreen(
                     Toast.makeText(context, "Copied to clipboard!", Toast.LENGTH_SHORT).show()
                   }
                 },
-                onDelete = { vm.deleteActivity() },
+                onDelete = {},
                 modifier = Modifier.padding(paddingValues))
           }
         }

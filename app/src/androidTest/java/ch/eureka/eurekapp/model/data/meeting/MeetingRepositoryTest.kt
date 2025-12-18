@@ -1,3 +1,4 @@
+/* Portions of this file where written with the help of Gemini and Claude Code. */
 package ch.eureka.eurekapp.model.data.meeting
 
 import ch.eureka.eurekapp.utils.FirebaseEmulator
@@ -15,7 +16,7 @@ import org.junit.Test
 /**
  * Test suite for MeetingRepository implementation.
  *
- * Note: Some of these tests were co-authored by Claude Code.
+ * Note: Some of these tests were co-authored by Claude Code and Gemini.
  */
 class MeetingRepositoryTest : FirestoreRepositoryTest() {
 
@@ -47,7 +48,8 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             title = "Team Meeting",
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
-            createdBy = testUserId)
+            createdBy = testUserId,
+            participantIds = listOf(testUserId, "other_user"))
 
     val result = repository.createMeeting(meeting1, testUserId, MeetingRole.HOST)
 
@@ -68,6 +70,8 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
     assertEquals(meeting1.meetingID, savedMeeting?.meetingID)
     assertEquals(meeting1.title, savedMeeting?.title)
     assertEquals(meeting1.status, savedMeeting?.status)
+    // Check that participantIds are saved
+    assertEquals(meeting1.participantIds, savedMeeting?.participantIds)
 
     val participants = repository.getParticipants(projectId, "meeting1").first()
     assertEquals(1, participants.size)
@@ -194,6 +198,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
     val projectId = "project_meeting_7"
     setupTestProject(projectId)
 
+    // meeting7: user is in participantIds
     val meeting7 =
         Meeting(
             meetingID = "meeting7",
@@ -202,7 +207,10 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             title = "My Meeting",
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
-            createdBy = testUserId)
+            createdBy = testUserId,
+            participantIds = listOf(testUserId))
+
+    // meeting8: user is NOT in participantIds
     val meeting8 =
         Meeting(
             meetingID = "meeting8",
@@ -211,40 +219,20 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             title = "Other Meeting",
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
-            createdBy = testUserId)
+            createdBy = "otherUser",
+            participantIds = listOf("otherUser"))
 
-    // Create meeting7 with testUser as participant
     repository.createMeeting(meeting7, testUserId, MeetingRole.HOST)
+    repository.createMeeting(meeting8, "otherUser", MeetingRole.HOST)
 
-    // Create meeting8 with testUser as creator but remove them as participant
-    repository.createMeeting(meeting8, testUserId, MeetingRole.HOST)
-    repository.removeParticipant(projectId, "meeting8", testUserId)
-
-    val flow = repository.getMeetingsForCurrentUser(projectId, skipCache = false)
+    // New API: No projectId required
+    val flow = repository.getMeetingsForCurrentUser(skipCache = false)
     val meetings = flow.first()
 
+    // Should only find meeting7 where testUserId is in participantIds
     assertEquals(1, meetings.size)
     assertEquals("meeting7", meetings[0].meetingID)
   }
-  // TODO find a good fix
-  /*@Test
-  fun getMeetingsForCurrentUser_shouldReturnEmptyListWhenUserNotInAnyMeeting() = runBlocking {
-    val projectId = "project_meeting_8"
-    setupTestProject(projectId)
-
-    val flow = repository.getMeetingsForCurrentUser(projectId)
-
-    // When skipCache is true and there's no data, the flow won't emit anything
-    // So we expect a timeout
-    var timedOut = false
-    try {
-      withTimeout(2000) { flow.first() }
-    } catch (e: TimeoutCancellationException) {
-      timedOut = true
-    }
-
-    assertTrue(timedOut)
-  }*/
 
   @Test
   fun updateMeeting_shouldUpdateMeetingDetails() = runBlocking {
@@ -341,6 +329,18 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
     assertEquals(2, participants.size)
     assertTrue(
         participants.any { it.userId == newParticipantId && it.role == MeetingRole.PARTICIPANT })
+
+    // Check that the participant ID was also added to the array
+    val updatedMeeting =
+        FirebaseEmulator.firestore
+            .collection("projects")
+            .document(projectId)
+            .collection("meetings")
+            .document("meeting11")
+            .get()
+            .await()
+            .toObject(Meeting::class.java)
+    assertTrue(updatedMeeting?.participantIds?.contains(newParticipantId) == true)
   }
 
   @Test
@@ -368,6 +368,18 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
     val participants = repository.getParticipants(projectId, "meeting12").first()
     assertEquals(1, participants.size)
     assertTrue(participants.all { it.userId == testUserId })
+
+    // Check that the participant ID was removed from the array
+    val updatedMeeting =
+        FirebaseEmulator.firestore
+            .collection("projects")
+            .document(projectId)
+            .collection("meetings")
+            .document("meeting12")
+            .get()
+            .await()
+            .toObject(Meeting::class.java)
+    assertTrue(updatedMeeting?.participantIds?.contains(participantId) == false)
   }
 
   @Test
