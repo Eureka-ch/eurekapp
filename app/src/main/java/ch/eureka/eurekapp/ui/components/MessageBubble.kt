@@ -143,7 +143,7 @@ fun MessageBubble(
                               interactions = state.interactions,
                               timestamp = state.timestamp,
                               editedAt = state.editedAt,
-                              isFromCurrentUser = true))
+                              isFromCurrentUser = false))
                     }
                 DisplayNameText(state.senderDisplayName)
               }
