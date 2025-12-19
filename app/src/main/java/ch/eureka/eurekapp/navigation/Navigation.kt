@@ -726,6 +726,8 @@ fun NavigationMenu(
           "AudioRecording",
           "TranscriptView",
           "MeetingDetail",
+          "MeetingNavigation", // Hide on map navigation screen
+          "MeetingLocationSelection", // Hide on map location selection screen
           "ViewTask",
           "CreateTask",
           "EditTask",

@@ -69,7 +69,9 @@ How to integrate it:
 • Add real-time meeting transcription
 • Build an AI input detection system
 • Connect to meeting flow
-• Test with sample meetings"""
+• Test with sample meetings
+
+Want to explore more ? """
 }
 
 /**
