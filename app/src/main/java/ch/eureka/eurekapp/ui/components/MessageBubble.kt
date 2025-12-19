@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -122,7 +123,8 @@ fun MessageBubble(
                               fileAttachment = state.fileAttachment,
                               interactions = state.interactions,
                               timestamp = state.timestamp,
-                              editedAt = state.editedAt))
+                              editedAt = state.editedAt,
+                              isFromCurrentUser = true))
                     }
                 ProfileIcon(state.senderPhotoUrl)
               } else {
@@ -140,7 +142,8 @@ fun MessageBubble(
                               fileAttachment = state.fileAttachment,
                               interactions = state.interactions,
                               timestamp = state.timestamp,
-                              editedAt = state.editedAt))
+                              editedAt = state.editedAt,
+                              isFromCurrentUser = true))
                     }
                 DisplayNameText(state.senderDisplayName)
               }
@@ -156,7 +159,8 @@ private data class MessageDisplayState(
     val fileAttachment: MessageBubbleFileAttachment,
     val interactions: MessageBubbleInteractions,
     val timestamp: Timestamp?,
-    val editedAt: Timestamp?
+    val editedAt: Timestamp?,
+    val isFromCurrentUser: Boolean
 )
 
 @Composable
@@ -167,6 +171,12 @@ private fun MessageDisplay(messageDisplayState: MessageDisplayState) {
       tonalElevation = EurekaStyles.CardElevation,
       modifier =
           Modifier.widthIn(max = 280.dp)
+              .then(
+                  if (!messageDisplayState.isFromCurrentUser) {
+                    Modifier.shadow(elevation = 4.dp, shape = EurekaStyles.CardShape)
+                  } else {
+                    Modifier
+                  })
               .testTag(MessageBubbleTestTags.BUBBLE)
               .then(
                   if (messageDisplayState.onLongClick != null) {
